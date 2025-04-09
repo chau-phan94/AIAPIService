@@ -14,7 +14,7 @@ enum OpenAIModel: String {
     case textDavinci003 = "text-davinci-003"
     case textCurie001 = "text-curie-001"
     case codeDavinci002 = "code-davinci-002"
-
+    
     // Helper function to get the raw value
     var modelName: String {
         return self.rawValue
@@ -30,8 +30,14 @@ enum OpenAIModel: String {
 }
 
 public protocol OpenAIGatewayProtocol {
-    func getModels() -> AnyPublisher<[String], Error>  // For fetching available models
-    func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error>  // For fetching completions
+    public func getModels() -> AnyPublisher<[String], Error>  // For fetching available models
+    public func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error>  // For fetching completions
+}
+
+extension OpenAIGatewayProtocol {
+    public func createCompletion(prompt: String) -> AnyPublisher<String, Error> {
+        return createCompletion(model: OpenAIModel.gpt4oMini, prompt: prompt, maxTokens: OpenAIModel.defaultMaxTokens)
+    }
 }
 
 struct OpenAIGateway: OpenAIGatewayProtocol {
@@ -40,12 +46,12 @@ struct OpenAIGateway: OpenAIGatewayProtocol {
     private struct ModelsResult: Decodable {
         var data: [String]
     }
-
+    
     // Completions endpoint response
     private struct CompletionsResult: Decodable {
         var choices: [CompletionChoice]
     }
-
+    
     // Helper struct for completion choices
     private struct CompletionChoice: Decodable {
         var text: String
@@ -59,7 +65,7 @@ struct OpenAIGateway: OpenAIGatewayProtocol {
             .map { $0.data }
             .eraseToAnyPublisher()
     }
-
+    
     // Create a completion for a given model, prompt, and token limit
     func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error> {
         APIServices.default
