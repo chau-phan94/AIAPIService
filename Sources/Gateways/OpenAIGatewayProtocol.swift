@@ -92,7 +92,7 @@ struct PreviewOpenAIGateway: OpenAIGatewayProtocol {
 }
 
 public extension Container {
-    var openAIGateway: Factory<OpenAIGatewayProtocol> {
+    public var openAIGateway: Factory<OpenAIGatewayProtocol> {
         Factory(self) {
             OpenAIGateway()
         }
