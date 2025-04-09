@@ -30,7 +30,7 @@ let package = Package(
                 .product(name: "Alamofire", package: "Alamofire"),
                 .product(name: "Factory", package: "Factory")
             ],
-            path: "Sources/AIAPIService"
+            path: "Sources/APIService"
         ),
         .testTarget(
             name: "AIAPIServiceTests",
