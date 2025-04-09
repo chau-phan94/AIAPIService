@@ -29,7 +29,7 @@ enum OpenAIModel: String {
     }
 }
 
-protocol OpenAIGatewayProtocol {
+public protocol OpenAIGatewayProtocol {
     func getModels() -> AnyPublisher<[String], Error>  // For fetching available models
     func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error>  // For fetching completions
 }
@@ -91,7 +91,7 @@ struct PreviewOpenAIGateway: OpenAIGatewayProtocol {
     }
 }
 
-extension Container {
+public extension Container {
     var openAIGateway: Factory<OpenAIGatewayProtocol> {
         Factory(self) {
             OpenAIGateway()
