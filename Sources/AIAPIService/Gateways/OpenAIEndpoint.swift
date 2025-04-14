@@ -89,6 +89,19 @@ extension OpenAIEndpoint: Endpoint {
                     ]
                 ]
             ]
+        case let .completions(model: model, prompt: prompt, maxTokens: maxTokens):
+                return [
+                    "model": "\(model)",
+                    "messages": [
+                        [
+                            "role": "user",
+                            "content": [
+                                ["type": "text",
+                                 "text": "\(prompt)"]
+                            ]
+                        ]
+                    ]
+                ]
         default:
             return nil
             
