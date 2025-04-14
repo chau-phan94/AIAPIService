@@ -6,10 +6,8 @@ import PackageDescription
 let package = Package(
     name: "AIAPIService",
     platforms: [
-        .iOS(.v16),
-        .macOS(.v13),
-        .tvOS(.v16),
-        .watchOS(.v9)
+        .iOS(.v13),
+        .macOS(.v13)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to other packages.
@@ -18,10 +16,8 @@ let package = Package(
             targets: ["AIAPIService"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Alamofire/Alamofire.git", from: "5.8.1"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3"),
-        .package(url: "git@github.com:hmlongco/Factory.git", from: "1.7.0"),
-        .package(url: "https://github.com/apple/swift-testing.git", from: "0.7.0")
+        .package(url: "git@github.com:Alamofire/Alamofire.git", from: "5.8.1"),
+        .package(url: "git@github.com:hmlongco/Factory.git", from: "2.4.5")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -30,18 +26,17 @@ let package = Package(
             name: "AIAPIService",
             dependencies: [
                 .product(name: "Alamofire", package: "Alamofire"),
-                .product(name: "Logging", package: "swift-log"),
-                .product(name: "ComposableArchitecture", package: "swift-composable-architecture")
+                .product(name: "Factory", package: "Factory")
             ],
             path: "Sources/AIAPIService"
         ),
         .testTarget(
             name: "AIAPIServiceTests",
             dependencies: [
-                "AIAPIService",
-                .product(name: "Testing", package: "swift-testing")
+                "AIAPIService"
             ],
             path: "Tests/AIAPIServiceTests"
         ),
-    ]
+    ],
+    swiftLanguageVersions: [.v5]
 )

@@ -8,6 +8,21 @@
 import Combine
 import Foundation
 
+public class APIKey {
+    static public let share = APIKey()
+    private var key = ""
+    
+    private init() {}
+    
+    public func setkey(key: String) {
+        self.key = key
+    }
+    
+    fileprivate func getKey() -> String {
+        return key
+    }
+}
+
 enum OpenAIEndpoint {
     case models
     case completions(model: String, prompt: String, maxTokens: Int)
@@ -33,7 +48,7 @@ extension OpenAIEndpoint: Endpoint {
     
     var headers: [String : Any]? {
         [
-            "Authorization": "Bearer \(Key.openAISecret)",
+            "Authorization": "Bearer \(APIKey.share.getKey())",
             "Content-Type": "application/json"
         ]
     }

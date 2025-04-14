@@ -373,11 +373,19 @@ public extension Endpoint {
         let pathExtension = url.pathExtension
         
         // Create a UTType instance based on the file extension
-        if let uti = UTType(filenameExtension: pathExtension) {
-            // Retrieve the MIME type for the given UTType
-            if let mimeType = uti.preferredMIMEType {
-                return mimeType
+        if #available(iOS 14.0, *) {
+            if let uti = UTType(filenameExtension: pathExtension) {
+                // Retrieve the MIME type for the given UTType
+                if #available(iOS 14.0, *) {
+                    if let mimeType = uti.preferredMIMEType {
+                        return mimeType
+                    }
+                } else {
+                    // Fallback on earlier versions
+                }
             }
+        } else {
+            // Fallback on earlier versions
         }
         
         // Return default MIME type if none is found
