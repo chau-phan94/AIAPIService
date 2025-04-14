@@ -7,6 +7,7 @@
 
 import Combine
 import Factory
+import Foundation
 
 enum OpenAIModel: String {
     case gpt4 = "gpt-4"
@@ -32,11 +33,11 @@ enum OpenAIModel: String {
 
 public protocol OpenAIGatewayProtocol {
     func getModels() -> AnyPublisher<[String], Error>  // For fetching available models
-    func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error>  // For fetching completions
+    func createCompletion<T: Decodable>(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<T, Error>  // For fetching completions
 }
 
 extension OpenAIGatewayProtocol {
-    public func createCompletion(prompt: String) -> AnyPublisher<String, Error> {
+    public func createCompletion<T: Decodable>(prompt: String) -> AnyPublisher<T, Error> {
         return createCompletion(model: OpenAIModel.gpt4oMini.rawValue, prompt: prompt, maxTokens: OpenAIModel.defaultMaxTokens)
     }
 }
@@ -68,11 +69,10 @@ struct OpenAIGateway: OpenAIGatewayProtocol {
     }
     
     // Create a completion for a given model, prompt, and token limit
-    func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error> {
+    func createCompletion<T: Decodable>(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<T, Error> {
         APIServices.default
             .request(OpenAIEndpoint.completions(model: model, prompt: prompt, maxTokens: maxTokens))
-            .data(type: CompletionsResult.self)
-            .map { $0.choices.first?.text ?? "" }
+            .data(type: T.self)
             .eraseToAnyPublisher()
     }
 }
@@ -89,17 +89,25 @@ struct PreviewOpenAIGateway: OpenAIGatewayProtocol {
     }
     
     // Return mock completion text
-    func createCompletion(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<String, Error> {
-        Future<String, Error> { promise in
+    func createCompletion<T: Decodable>(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<T, Error> {
+        Future<T, Error> { promise in
             let completionText = "This is a mocked completion for the prompt: \(prompt)"
-            promise(.success(completionText))
+            let mockResponse = ["text": completionText]
+            
+            do {
+                let data = try JSONSerialization.data(withJSONObject: mockResponse, options: [])
+                let decoded = try JSONDecoder().decode(T.self, from: data)
+                promise(.success(decoded))
+            } catch {
+                promise(.failure(error))
+            }
         }
         .eraseToAnyPublisher()
     }
 }
 
 public extension Container {
-    public var openAIGateway: Factory<OpenAIGatewayProtocol> {
+    var openAIGateway: Factory<OpenAIGatewayProtocol> {
         Factory(self) {
             OpenAIGateway()
         }
