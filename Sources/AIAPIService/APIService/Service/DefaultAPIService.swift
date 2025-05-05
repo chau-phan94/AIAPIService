@@ -22,15 +22,18 @@ public final class DefaultAPIService: APIService, DownloadWithProgress, DataWith
     public var dataTaskHandler = DataTaskHandler()
     
     /// The logger used for logging API requests and responses.
-    public var logger: APILogger? = IntermediateLogger.shared {
+    public var logger: APILogger {
         didSet {
             dataTaskHandler.logger = logger
             downloadTaskHandler.logger = logger
         }
     }
     
-    /// Private initializer to ensure singleton usage.
-    private init() {
+    /// Initializes DefaultAPIService with dependency injection for logger.
+    /// - Parameters:
+    ///   - logger: The APILogger implementation to use. Defaults to IntermediateLogger.shared.
+    public init(logger: APILogger = IntermediateLogger.shared) {
+        self.logger = logger
         // Session for request
         self.session = URLSession(configuration: .default, delegate: nil, delegateQueue: nil)
         
@@ -50,5 +53,13 @@ public final class DefaultAPIService: APIService, DownloadWithProgress, DataWith
         // Session for data
         let dataConfiguration = downloadConfiguration.copy() as! URLSessionConfiguration
         self.dataSession = URLSession(configuration: dataConfiguration, delegate: dataTaskHandler, delegateQueue: nil)
+        
+        // Propagate logger to handlers
+        self.dataTaskHandler.logger = logger
+        self.downloadTaskHandler.logger = logger
     }
+    
+    /// The shared instance of `DefaultAPIService` (for backward compatibility, uses IntermediateLogger by default).
+    public static let shared = DefaultAPIService()
+
 }

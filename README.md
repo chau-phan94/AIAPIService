@@ -59,6 +59,51 @@ Task {
         let response = try await service.sendRequest(request)
         print(response.choices.first?.text ?? "")
     } catch {
+        print(error)
+    }
+}
+
+## SOLID Principles & Dependency Injection
+
+This library is designed with [SOLID principles](https://en.wikipedia.org/wiki/SOLID) in mind. In particular:
+
+- **Dependency Inversion Principle (DIP):** Core services such as `DefaultAPIService` now accept dependencies (like loggers) via their initializer.
+- **Open/Closed Principle (OCP):** You can extend or swap out loggers and other dependencies without modifying the core service logic.
+
+### Customizing the Logger
+
+You can inject any custom logger conforming to `APILogger`:
+
+```swift
+import AIAPIService
+
+class MyLogger: APILogger {
+    func logRequest(_ urlRequest: URLRequest) {
+        print("[MyLogger] Request: \(urlRequest)")
+    }
+    func logResponse(_ response: URLResponse?, data: Data?) {
+        print("[MyLogger] Response: \(String(describing: response))")
+    }
+}
+
+let customLogger = MyLogger()
+let service = DefaultAPIService(logger: customLogger)
+```
+
+### Dependency Injection for Gateways
+
+You can now inject dependencies into gateways, such as `OpenAIGateway`, for full SOLID compliance:
+
+```swift
+import AIAPIService
+
+let customLogger = MyLogger()
+let customService = DefaultAPIService(logger: customLogger)
+let gateway = OpenAIGateway(apiService: customService, logger: customLogger)
+```
+
+This makes it easy to swap out implementations for testing or customization. All major components now support dependency injection for improved testability and flexibility.
+
         print("Error: \(error)")
     }
 }

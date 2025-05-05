@@ -42,7 +42,10 @@ extension OpenAIGatewayProtocol {
     }
 }
 
+/// OpenAIGateway allows dependency injection for APIService and APILogger for SOLID compliance.
 struct OpenAIGateway: OpenAIGatewayProtocol {
+    private let apiService: APIService
+    private let logger: APILogger?
     
     // Models endpoint response
     private struct ModelsResult: Decodable {
@@ -59,9 +62,19 @@ struct OpenAIGateway: OpenAIGatewayProtocol {
         var text: String
     }
     
+    /// Initialize with dependencies (APIService and optional logger)
+    /// - Parameters:
+    ///   - apiService: The APIService to use (default: APIServices.default)
+    ///   - logger: Optional logger for request/response (default: nil)
+    init(apiService: APIService = APIServices.default, logger: APILogger? = nil) {
+        self.apiService = apiService
+        self.logger = logger
+    }
+    
     // Fetch available models
     func getModels() -> AnyPublisher<[String], Error> {
-        APIServices.default
+        logger?.logRequest(URLRequest(url: URL(string: "https://api.openai.com/v1/models")!))
+        return apiService
             .request(OpenAIEndpoint.models)
             .data(type: ModelsResult.self)
             .map { $0.data }
@@ -70,12 +83,14 @@ struct OpenAIGateway: OpenAIGatewayProtocol {
     
     // Create a completion for a given model, prompt, and token limit
     func createCompletion<T: Decodable>(model: String, prompt: String, maxTokens: Int) -> AnyPublisher<T, Error> {
-        APIServices.default
+        logger?.logRequest(URLRequest(url: URL(string: "https://api.openai.com/v1/completions")!))
+        return apiService
             .request(OpenAIEndpoint.completions(model: model, prompt: prompt, maxTokens: maxTokens))
             .data(type: T.self)
             .eraseToAnyPublisher()
     }
 }
+
 
 struct PreviewOpenAIGateway: OpenAIGatewayProtocol {
     
